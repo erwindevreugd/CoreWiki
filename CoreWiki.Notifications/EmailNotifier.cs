@@ -39,10 +39,17 @@ namespace CoreWiki.Notifications
 
 			if (string.IsNullOrWhiteSpace(_configuration.FromEmailAddress))
 			{
-				_logger.LogWarning($"Missing from FromEmailAddress setting in {nameof(EmailNotifications)}");
+				_logger.LogWarning($"Missing FromEmailAddress setting in {nameof(EmailNotifications)}");
 
 				return false;
 			}
+
+		    if (string.IsNullOrWhiteSpace(_configuration.FromName))
+		    {
+		        _logger.LogWarning($"Missing FromName setting in {nameof(EmailNotifications)}");
+
+		        return false;
+		    }
 
 			if (string.IsNullOrWhiteSpace(recipientEmail))
 			{
