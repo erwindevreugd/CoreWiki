@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CoreWiki.Pages
@@ -28,13 +29,21 @@ namespace CoreWiki.Pages
 
 		public int TotalPages { get; set; }
 
-		public IEnumerable<Article> Articles { get; set; }
+		public IEnumerable<ArticleSummaryDTO> Articles { get; set; }
 
 
 		public async Task OnGet(int pageNumber = 1)
 		{
 			ManagePageSize();
-			Articles = await _articleRepo.GetAllArticlesPaged(PageSize, pageNumber);
+			Articles = from article in await _articleRepo.GetAllArticlesPaged(PageSize, pageNumber)
+								 select new ArticleSummaryDTO
+								 {
+									 Slug = article.Slug,
+									 Topic = article.Topic,
+									 Published = article.Published,
+									 ViewCount = article.ViewCount
+								 };
+
 			TotalPages = await _articleRepo.GetTotalPagesOfArticles(PageSize);
 		}
 
