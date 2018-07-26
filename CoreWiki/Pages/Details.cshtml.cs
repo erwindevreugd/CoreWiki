@@ -12,6 +12,9 @@ using System;
 using System.Threading.Tasks;
 using CoreWiki.Core.Notifications;
 using System.Linq;
+using CoreWiki.RequestModels;
+using CoreWiki.Requests;
+using MediatR;
 
 namespace CoreWiki.Pages
 {
@@ -21,6 +24,7 @@ namespace CoreWiki.Pages
 		private readonly ICommentRepository _commentRepo;
 		private readonly ISlugHistoryRepository _slugHistoryRepo;
 		private readonly IClock _clock;
+		private readonly IMediator _mediator;
 		private readonly UserManager<CoreWikiUser> _UserManager;
 		private readonly INotificationService _notificationService;
 
@@ -34,12 +38,14 @@ namespace CoreWiki.Pages
 			UserManager<CoreWikiUser> userManager,
 			IConfiguration config,
 			INotificationService notificationService,
-			IClock clock)
+			IClock clock,
+			IMediator mediator)
 		{
 			_articleRepo = articleRepo;
 			_commentRepo = commentRepo;
 			_slugHistoryRepo = slugHistoryRepo;
 			_clock = clock;
+			_mediator = mediator;
 			_UserManager = userManager;
 			_notificationService = notificationService;
 			Configuration = config;
@@ -52,27 +58,10 @@ namespace CoreWiki.Pages
 
 		public async Task<IActionResult> OnGetAsync(string slug)
 		{
-
 			// TODO: If topicName not specified, default to Home Page
-
 			slug = slug ?? UrlHelpers.HomePageSlug;
 
-			var article = await _articleRepo.GetArticleBySlug(slug);
-
-			if (article == null)
-			{
-				Slug = slug;
-				var historical = await _slugHistoryRepo.GetSlugHistoryWithArticle(slug);
-
-				if (historical != null)
-				{
-					return new RedirectResult($"~/wiki/{historical.Article.Slug}");
-				}
-				else
-				{
-					return new ArticleNotFoundResult(slug);
-				}
-			}
+			var article = await _mediator.Send(new DetailsGetRequest(slug));
 
 			var comments = (
 				from comment in article.Comments
@@ -111,26 +100,34 @@ namespace CoreWiki.Pages
 			return Page();
 		}
 
-		public async Task<IActionResult> OnPostAsync(Comment comment)
+		public async Task<IActionResult> OnPostAsync(NewCommentFormModel comment)
 		{
 			TryValidateModel(comment);
-			var article = await _articleRepo.GetArticleByComment(comment);
-			if (article == null)
-				return new ArticleNotFoundResult();
-
 			if (!ModelState.IsValid)
 				return Page();
 
-			comment.Article = article;
-			comment.Submitted = _clock.GetCurrentInstant();
-			await _commentRepo.CreateComment(comment);
+			//var article = await _articleRepo.GetArticleByComment(comment);
+			//if (article == null)
+			//	return new ArticleNotFoundResult();
+
+			//comment.Article = article;
+			//comment.Submitted = _clock.GetCurrentInstant();
+			//await _commentRepo.CreateComment(comment);
+
+			var result = await _mediator.Send(
+				new DetailsPostRequest(
+					comment.IdArticle,
+					comment.DisplayName,
+					comment.Email,
+					comment.Content,
+					comment.AuthorId));
 
 			// IDEA: Make this an extensibility module, we should only be creating a comment here (single responsibility principle)
 			// TODO: Also check for verified email if required
-			var author = await _UserManager.FindByIdAsync(article.AuthorId.ToString());
-			await _notificationService.SendNewCommentEmail(author.Email, author.UserName, comment.DisplayName, article.Topic, article.Slug, () => author.CanNotify);
+			//var author = await _UserManager.FindByIdAsync(article.AuthorId.ToString());
+			//await _notificationService.SendNewCommentEmail(author.Email, author.UserName, comment.DisplayName, article.Topic, article.Slug, () => author.CanNotify);
 
-			return Redirect($"/wiki/{article.Slug}");
+			return Redirect($"/wiki/{Slug}");
 		}
 	}
 }

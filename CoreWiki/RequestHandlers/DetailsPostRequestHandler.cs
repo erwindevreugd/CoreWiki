@@ -37,7 +37,7 @@ namespace CoreWiki.RequestHandlers
 	    {
 		    var article = await _articleRepository.GetArticleById(request.ArticleId);
 
-			if(article == null) throw new ArticleNotFoundException();
+		    if (article == null) throw new ArticleNotFoundException();
 
 		    var comment = new Comment()
 		    {
