@@ -2,6 +2,7 @@
 using CoreWiki.Data.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CoreWiki.Pages
@@ -16,12 +17,19 @@ namespace CoreWiki.Pages
 		}
 
 
-		public IList<Article> Articles { get; set; }
+		public IList<ArticleSummaryDTO> Articles { get; set; }
 
 
 		public async Task OnGetAsync()
 		{
-			Articles = await _articleRepo.GetLatestArticles(10);
+			Articles = (from article in await _articleRepo.GetLatestArticles(10)
+				select new ArticleSummaryDTO
+				{
+					Slug = article.Slug,
+					Topic = article.Topic,
+					Published = article.Published,
+					ViewCount = article.ViewCount
+				}).ToList();
 		}
 	}
 }
