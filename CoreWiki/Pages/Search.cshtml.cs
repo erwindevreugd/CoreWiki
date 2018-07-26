@@ -24,11 +24,27 @@ namespace CoreWiki.Pages
 
 			if (isQueryPresent)
 			{
-				SearchResult = await _articlesSearchEngine.SearchAsync(
+				var result = await _articlesSearchEngine.SearchAsync(
 					query,
 					GetPageNumberOrDefault(),
 					ResultsPerPage
 				);
+
+				SearchResult = new SearchResult<ArticleSummaryDTO>()
+				{
+					Query = result.Query,
+					TotalResults = result.TotalResults,
+					ResultsPerPage = result.ResultsPerPage,
+					CurrentPage = result.CurrentPage,
+					Results = (from article in result.Results
+						select new ArticleSummaryDTO
+						{
+							Slug = article.Slug,
+							Topic = article.Topic,
+							Published = article.Published,
+							ViewCount = article.ViewCount
+						}).ToList()
+				};
 			}
 
 			return Page();
