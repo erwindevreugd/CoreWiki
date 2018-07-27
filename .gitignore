@@ -276,3 +276,4 @@ CoreWiki/wwwroot/lib/
 *.min.js
 /CoreWiki.v3.ncrunchsolution
 /CoreWiki.Test/CoreWiki.Test.v3.ncrunchproject
+/CoreWiki.Test/bad_words.txt
