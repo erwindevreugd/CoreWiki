@@ -1,4 +1,6 @@
-﻿namespace CoreWiki.Extensibility.Common
+using System;
+
+namespace CoreWiki.Extensibility.Common
 {
     public interface ICoreWikiModule
     {

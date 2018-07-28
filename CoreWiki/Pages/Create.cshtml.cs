@@ -1,5 +1,4 @@
-﻿using CoreWiki.Data;
-using CoreWiki.Data.Data.Interfaces;
+﻿using CoreWiki.Data.Data.Interfaces;
 using CoreWiki.Data.Models;
 using CoreWiki.Extensibility.Common;
 using CoreWiki.Helpers;
@@ -18,7 +17,6 @@ namespace CoreWiki.Pages
 {
 	public class CreateModel : PageModel
 	{
-
 		private readonly IArticleRepository _articleRepo;
 		private readonly IClock _clock;
 		private readonly IExtensibilityManager _extensibilityManager;
@@ -58,6 +56,7 @@ namespace CoreWiki.Pages
 
 		public async Task<IActionResult> OnPostAsync()
 		{
+
 			var result = _extensibilityManager.InvokePreArticleCreateEvent(Article.Topic, Article.Content);
 			ModelState.BindValidationResult(result?.ValidationResults);
 
@@ -65,6 +64,7 @@ namespace CoreWiki.Pages
 			Article.Content = result.Content;
 
 			var slug = UrlHelpers.URLFriendly(Article.Topic);
+
 			if (string.IsNullOrWhiteSpace(slug))
 			{
 				ModelState.AddModelError("Article.Topic", "The Topic must contain at least one alphanumeric character.");
@@ -73,6 +73,7 @@ namespace CoreWiki.Pages
 
 			Article.Slug = slug;
 			Article.AuthorId = Guid.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+			Article.AuthorName = User.Identity.Name;
 
 			if (!ModelState.IsValid)
 			{
@@ -103,7 +104,7 @@ namespace CoreWiki.Pages
 				return RedirectToPage("CreateArticleFromLink", new { id = slug });
 			}
 
-			return Redirect($"/{Article.Slug}");
+			return Redirect($"/wiki/{Article.Slug}");
 		}
 	}
 }

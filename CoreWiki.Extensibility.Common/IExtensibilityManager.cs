@@ -1,9 +1,11 @@
-﻿using CoreWiki.Extensibility.Common.Events;
+using System;
+using CoreWiki.Extensibility.Common.Events;
 
 namespace CoreWiki.Extensibility.Common
 {
     public interface IExtensibilityManager
     {
+
         /// <summary>
         /// Raises an event in all registered CoreWiki modules before a new user is registered.
         /// </summary>

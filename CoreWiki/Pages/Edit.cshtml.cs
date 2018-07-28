@@ -1,11 +1,11 @@
 ﻿using CoreWiki.Data;
 using CoreWiki.Data.Data.Interfaces;
-using CoreWiki.Data.Data.Repositories;
 using CoreWiki.Data.Models;
+using CoreWiki.Extensibility.Common;
 using CoreWiki.Helpers;
+using CoreWiki.Extensibility.Common.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using System;
 using System.Linq;
@@ -22,11 +22,19 @@ namespace CoreWiki.Pages
 		private readonly ISlugHistoryRepository _SlugRepo;
 		private readonly IClock _clock;
 
-		public EditModel(IArticleRepository articleRepo, ISlugHistoryRepository slugHistoryRepository, IClock clock)
+		private readonly IExtensibilityManager _extensibilityManager; // MAC
+		private readonly ICoreWikiModuleEvents _moduleEvents;
+
+		public EditModel(IArticleRepository articleRepo, ISlugHistoryRepository slugHistoryRepository, IClock clock,
+						 IExtensibilityManager extensibilityManager,
+						 ICoreWikiModuleEvents moduleEvents)
 		{
 			_Repo = articleRepo;
 			_SlugRepo = slugHistoryRepository;
 			_clock = clock;
+
+			_extensibilityManager = extensibilityManager; // MAC
+			_moduleEvents = moduleEvents;
 		}
 
 		[BindProperty]
@@ -59,17 +67,30 @@ namespace CoreWiki.Pages
 			Article.ViewCount = existingArticle.ViewCount;
 			Article.Version = existingArticle.Version + 1;
 
+			// MAC - check PreSubmitArticle extensibility event
+			if (_moduleEvents.PreEditArticle != null)
+			{
+
+				var args = _extensibilityManager.InvokePreArticleEditEvent(Article.Topic, Article.Content);
+
+				if (args.Cancel)
+				{
+
+					ModelState.BindValidationResult(args.ValidationResults);
+
+					return Page();
+				}
+
+				Article.Topic = args.Topic;
+				Article.Content = args.Content;
+			}
+			// MAC
+
 			//check if the slug already exists in the database.
 			var slug = UrlHelpers.URLFriendly(Article.Topic);
 			if (String.IsNullOrWhiteSpace(slug))
 			{
 				ModelState.AddModelError("Article.Topic", "The Topic must contain at least one alphanumeric character.");
-				return Page();
-			}
-
-			if (!await _Repo.IsTopicAvailable(slug, Article.Id))
-			{
-				ModelState.AddModelError("Article.Topic", "This Title already exists.");
 				return Page();
 			}
 
@@ -88,9 +109,21 @@ namespace CoreWiki.Pages
 
 			//AddNewArticleVersion();
 
-			try {
+			// MAC - check ArticleSubmitted extensibility event
+			if (_moduleEvents.PostEditArticle != null)
+			{
+
+				_extensibilityManager.InvokePostArticleEditEvent(Article.Topic, Article.Content);
+
+			}
+			// MAC
+
+			try
+			{
 				await _Repo.Update(Article);
-			} catch (ArticleNotFoundException) {
+			}
+			catch (ArticleNotFoundException)
+			{
 				return new ArticleNotFoundResult();
 			}
 
@@ -99,10 +132,10 @@ namespace CoreWiki.Pages
 				return RedirectToPage("CreateArticleFromLink", new { id = slug });
 			}
 
-			return Redirect($"/{(Article.Slug == "home-page" ? "" : Article.Slug)}");
+			return Redirect($"/wiki/{(Article.Slug == UrlHelpers.HomePageSlug ? "" : Article.Slug)}");
 		}
 
-	
+
 	}
 
 }

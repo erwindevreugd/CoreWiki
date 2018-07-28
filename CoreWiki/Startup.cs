@@ -49,6 +49,7 @@ namespace CoreWiki
 			app.UseExtensibility();
 			app.UseStatusCodePagesWithReExecute("/HttpErrors/{0}");
 			app.UseMvc();
-        }
+
+    }
 	}
 }

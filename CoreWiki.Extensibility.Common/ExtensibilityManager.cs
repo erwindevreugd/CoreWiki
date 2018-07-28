@@ -1,10 +1,11 @@
-﻿using CoreWiki.Extensibility.Common.Events;
+using CoreWiki.Extensibility.Common.Events;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 
 namespace CoreWiki.Extensibility.Common
 {
+
     public class ExtensibilityManager : ExtensibilityManagerBase, IExtensibilityManager
     {
         private readonly ICoreWikiModuleHost _coreWikiModuleHost;

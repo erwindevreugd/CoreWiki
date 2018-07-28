@@ -10,5 +10,6 @@ namespace CoreWiki.Core.Configuration
 		public Comments Comments { get; set; }
 		public EmailNotifications EmailNotifications { get; set; }
 		public CspSettings CspSettings { get; set; }
+		
     }
 }
