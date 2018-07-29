@@ -7,9 +7,13 @@ namespace CoreWiki.Extensibility.TheChapel
 {
     public class ProfanityCheck : ICoreWikiModule
     {
+	    private readonly FileDictionaryProvider _dictionaryProvider;
+	    private ILogger _logger;
+	    private ICoreWikiModuleHost _coreWikiModuleHost;
+
         public ProfanityCheck()
         {
-            _BadWords = GetProfanityWords();
+			_dictionaryProvider = new FileDictionaryProvider("bad_words.txt");
         }
 
         void ICoreWikiModule.Initialize(ICoreWikiModuleHost coreWikiModuleHost)
@@ -44,26 +48,14 @@ namespace CoreWiki.Extensibility.TheChapel
             throw new NotImplementedException();
         }
 
-        string[] _BadWords;
-        private ILogger _logger;
-	    private ICoreWikiModuleHost _coreWikiModuleHost;
-
 	    string RemoveProfanity(string text)
         {
-            string newText = text;
+			var filter = new ProfanityFilter();
+	        var badWords = _dictionaryProvider.GetDictionary();
 
-            foreach (string badWord in _BadWords)
-                newText = newText.Replace(badWord, "[No Profanity]");
+	        var result = filter.Remove(text, badWords);
 
-            return newText;
-        }
-
-        string[] GetProfanityWords()
-        {
-            return new string[]
-            {
-                 "filth", "flarn"
-            };
+            return result;
         }
 
         public void Dispose()

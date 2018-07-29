@@ -8,4 +8,10 @@
     <ProjectReference Include="..\CoreWiki.Extensibility.Common\CoreWiki.Extensibility.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="bad_words.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
