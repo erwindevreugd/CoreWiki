@@ -7,5 +7,9 @@ namespace CoreWiki.Test.Extensibility.Mocks
         public void Initialize(ICoreWikiModuleHost coreWikiModuleHost)
         {
         }
+
+	    public void Dispose()
+	    {
+	    }
     }
 }
