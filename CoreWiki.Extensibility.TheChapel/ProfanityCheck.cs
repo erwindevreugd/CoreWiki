@@ -14,11 +14,11 @@ namespace CoreWiki.Extensibility.TheChapel
 
         void ICoreWikiModule.Initialize(ICoreWikiModuleHost coreWikiModuleHost)
         {
-            coreWikiModuleHost.Events.PreCreateArticle += OnPreSubmitArticle;
-            coreWikiModuleHost.Events.PostCreateArticle += OnPostSubmitArticle;
-            coreWikiModuleHost.Events.PreEditArticle += OnPreEditArticle;
-            coreWikiModuleHost.Events.PostEditArticle+= OnPostEditArticle;
-
+	        _coreWikiModuleHost = coreWikiModuleHost;
+	        _coreWikiModuleHost.Events.PreCreateArticle += OnPreSubmitArticle;
+	        _coreWikiModuleHost.Events.PostCreateArticle += OnPostSubmitArticle;
+	        _coreWikiModuleHost.Events.PreEditArticle += OnPreEditArticle;
+	        _coreWikiModuleHost.Events.PostEditArticle += OnPostEditArticle;
             _logger = coreWikiModuleHost.LoggerFactory.CreateLogger(nameof(ProfanityCheck));
             _logger.LogInformation("ProfanityCheck CoreWikiModule Initialized");
         }
@@ -46,8 +46,9 @@ namespace CoreWiki.Extensibility.TheChapel
 
         string[] _BadWords;
         private ILogger _logger;
+	    private ICoreWikiModuleHost _coreWikiModuleHost;
 
-        string RemoveProfanity(string text)
+	    string RemoveProfanity(string text)
         {
             string newText = text;
 
@@ -63,6 +64,10 @@ namespace CoreWiki.Extensibility.TheChapel
             {
                  "filth", "flarn"
             };
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
