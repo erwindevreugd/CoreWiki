@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
 namespace CoreWiki.Extensibility.Common
 {
-    public interface ICoreWikiModule
+    public interface ICoreWikiModule : IDisposable
     {
         /// <summary>
         /// Initializes a CoreWiki module with the CoreWiki module host.
